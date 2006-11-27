@@ -1,0 +1,220 @@
+NB. zfiles - zip file utilities
+NB.
+NB. file argument is a boxed pair:
+NB.    (folders always use and end with forward '/')
+NB.    'path/internal.file';'path/zip.file'
+NB.
+NB. results correspond to 'files' package
+NB.
+NB. ZERR_zfiles_ is the last error code. 
+NB.    See values with edit'ZERR_zfiles_'
+NB.
+NB. Copyright 2006 (C) Oleg Kobchenko
+NB. Provided AS IS. No warrantiles or liabilities extended.
+NB. For zlib and minizip see README files
+NB. 
+NB. 03/20/06 Created
+NB. 06/12/06 Added zwrite
+NB. 11/27/06 Moved to arc folder
+
+coclass 'zfiles'
+
+TEMPFILE=: 'graphview'
+TEMPDIR=: jpath '~temp'
+ADDONDIR=: jpath '~addons/arc/zip/'
+
+require 'dll files regex strings'
+
+libp=. #.IFWIN32,'Darwin'-:UNAME
+libf=. libp{:: 'zlibapi'; 'libzlib'; 'zlibwapi';''
+libe=. libp{:: 'so'     ; 'dylib'  ; 'dll'     ;''
+LIB=: jpath ADDONDIR,'lib/',libf,'.',libe,' '
+
+cdecl=: ' ' ,~ IFWIN32{'  '
+xcdm=: 1 : '(LIB,cdecl,m.)&(15!:0)'
+
+unzOpen=:                'unzOpen                i  *c     ' xcdm
+unzClose=:               'unzClose               i  i      ' xcdm
+unzLocateFile=:          'unzLocateFile          i  i *c i ' xcdm
+
+unzOpenCurrentFile=:     'unzOpenCurrentFile     i  i      ' xcdm
+unzCloseCurrentFile=:    'unzCloseCurrentFile    i  i      ' xcdm
+unzReadCurrentFile=:     'unzReadCurrentFile     i  i *c i ' xcdm
+
+unzGoToFirstFile=:       'unzGoToFirstFile       i  i      ' xcdm
+unzGoToNextFile=:        'unzGoToNextFile        i  i      ' xcdm
+unzGetCurrentFileInfo=:  'unzGetCurrentFileInfo  i  i *c *c i  i i  i i ' xcdm
+
+zipOpen=:                'zipOpen                i  *c i   ' xcdm
+zipClose=:               'zipClose               i  i i    ' xcdm
+zipOpenNewFileInZip=:    'zipOpenNewFileInZip    i  i *c *c  i i i i i  i i' xcdm
+zipCloseFileInZip=:      'zipCloseFileInZip      i  i      ' xcdm
+zipWriteInFileInZip=:    'zipWriteInFileInZip    i  i *c i ' xcdm
+
+
+NB. Return codes for the compression/decompression functions. Negative
+NB. values are errors, positive values are used for special but normal events.
+ZERR=: 0
+'Z_OK Z_STREAM_END Z_NEED_DICT'=: 0 1 2
+'Z_ERRNO Z_STREAM_ERROR Z_DATA_ERROR'=: -1 2 3
+'Z_MEM_ERROR Z_BUF_ERROR Z_VERSION_ERROR'=: -4 5 6
+
+NB. compression levels
+'Z_NO_COMPRESSION Z_BEST_SPEED Z_BEST_COMPRESSION Z_DEFAULT_COMPRESSION'=: 0 1 9 _1
+
+NB. Return codes for the unzip
+'UNZ_OK UNZ_END_OF_LIST_OF_FILE UNZ_ERRNO UNZ_EOF'=: 0 _100 _1 0
+'UNZ_PARAMERROR UNZ_BADZIPFILE UNZ_INTERNALERROR UNZ_CRCERROR'=: -102 103 104 105
+
+Z_DEFLATED=: 8   NB. method or 0=no compresion
+
+t=.  'VerMade VerNeed Flag Method DosDate Crc ComSize Size '
+t=.t,'cbFileName cbFileEx cbFileCom DiskNum InAttr ExAttr '
+FileInfo=: t,'Sec Min Hour Day Mon Year'
+
+and=: 17 b.
+
+NB. =========================================================
+NB.*zexist v test if a file exists
+NB. Returns 1 if the file exists, otherwise 0.
+zexist=: 3 : 0
+  'FN ZN'=. y.
+  ZERR=: Z_ERRNO
+  if. 0=Z=. 0{::unzOpen ,<ZN do. 0 return. end.
+  ZERR=: 0{::unzLocateFile Z;FN;0
+  unzClose Z
+  ZERR=Z_OK
+)
+
+NB. =========================================================
+NB.*zdir v zip directory: boxed matrix
+NB. examples:
+NB.   zdir jpath'~addons\zip\test.zip'
+NB.   zdir '*.txt';jpath'~addons\zip\test.zip'
+zdir=: 3 : 0
+  'FN ZN'=. _2{.boxopen y.
+  if. 0=#FN do. FP=. rxcomp '.*' else.
+    FP=. rxcomp FN rplc '?';'.';'*';'.*';'.';'\.' end.
+  ZERR=: Z_ERRNO
+  if. 0=Z=. 0{::unzOpen ,<ZN do. 
+    rxfree FP
+    empty'' return. end.
+  r=. empty''
+  ZERR=: 0{::unzGoToFirstFile Z
+  while. ZERR=Z_OK do.
+    if. 0 = #r1=. zgetinfo Z do. break. end.
+    if. FP rxeq 0{::r1 do. r=. r,r1 end.
+    ZERR=: 0{::unzGoToNextFile Z
+  end.
+  unzClose Z
+  rxfree FP
+  r
+)
+
+NB. =========================================================
+NB.*zinfo v single file info
+NB. format same as zdir result item
+zinfo=: 3 : 0
+  'FN ZN'=. y.
+  ZERR=: Z_ERRNO
+  if. 0=Z=. 0{::unzOpen ,<ZN do. 0 return. end.
+  if. Z_OK~:ZERR=: 0{::unzLocateFile Z;FN;0 do.
+    unzClose Z
+    empty'' return. end.
+  r=. zgetinfo Z
+  unzCloseCurrentFile Z
+  unzClose Z
+  r
+)
+
+zgetinfo=: 3 : 0
+  FI=. 80#'Z'
+  FN=. 128#' '
+  'ze yy FI FN'=. 4{.unzGetCurrentFileInfo y.;FI;FN;(#FN);0;0;0;0
+  if. Z_OK~:ZERR=: ze do.
+    empty'' return. end.
+  (FileInfo)=. _2(3!:4) FI
+  A=. '------'
+  A=. ('a-'{~0=ExAttr and 32)5}A
+  A=. ('d-'{~0=ExAttr and 16)4}A
+  (cbFileName{.FN);(Year,Mon,Day,Hour,Min,Sec);Size;'rw-';A
+)
+
+NB. =========================================================
+NB.*zread v read file
+NB. returns _1 if failed
+zread=: 3 : 0
+  'FN ZN'=. y.
+  ZERR=: Z_ERRNO
+  if. 0=Z=. 0{::unzOpen ,<ZN do. _1 return. end.
+  if. Z_OK~:ZERR=: 0{::unzLocateFile Z;FN;0 do.
+    unzClose Z
+    _1 return. end.
+  if. Z_OK~:ZERR=: 0{::unzOpenCurrentFile Z do.
+    unzClose Z
+    _1 return. end.
+  r=. ''
+  t=. 16384$' '
+  while. 1 do.
+    ZERR=: 0{::unzReadCurrentFile Z;t;#t
+    if. ZERR<:0 do. break. end.
+    if. ZERR=#t do. r=. r,t else. r=.r, ZERR{.t end.
+  end.
+  if. ZERR<0 do. r=. _1 end.
+  unzCloseCurrentFile Z
+  unzClose Z
+  r
+)
+
+NB. =========================================================
+NB.*CL n compress level 0..9
+CL=: 9
+
+NB. =========================================================
+NB.*zwrite v write file
+NB. returns _1 if failed
+zwrite=: 4 : 0
+  'FN ZN'=. y.
+  ZERR=: Z_ERRNO
+  AP=. 2*fexist <ZN
+  if. 0=Z=. 0{::zipOpen ZN;AP do. _1 return. end.
+  ZI=. (|.<.6!:0''),0,0,32,0       NB. zip_fileinfo
+  ZI=. 2 (3!:4) ZI
+  if. Z_OK~:ZERR=: 0{::zipOpenNewFileInZip Z;FN;ZI;0;0;0;0;0;(Z_DEFLATED**CL);CL do.
+    zipClose Z;0
+    _1 return. end.
+  ZERR=: 0{::zipWriteInFileInZip Z;x.;#x.
+  zipCloseFileInZip Z
+  zipClose Z;0
+  (ZERR=Z_OK) { _1,#x.
+)
+
+NB. =========================================================
+NB.*zsize v return file size
+NB. returns file size or _1 if error
+zsize=: 3 : 0
+  if. 0=#t=. zinfo y. do. _1 return. end.
+  2{:: t
+)
+
+NB. =========================================================
+NB.*ztype v file type
+NB. return 0 = not exist
+NB.        1 = file
+NB.        2 = directory (optionally ending in path separator)
+ztype=: 3 : 0
+  if. 0=#t=. zinfo y. do. 0 return. end.
+  1+'/'=_1{0{:: t
+)
+
+NB. =========================================================
+NB.*zscript v load script from zip, cover for 0!:0
+zscript_z_=: [: 3 : '0!:0 zread y.' ]
+
+zexist_z_=: zexist_zfiles_
+zread_z_=: zread_zfiles_
+zwrite_z_=: zwrite_zfiles_
+zinfo_z_=: zinfo_zfiles_
+zdir_z_=: zdir_zfiles_
+zsize_z_=: zsize_zfiles_
+ztype_z_=: ztype_zfiles_
