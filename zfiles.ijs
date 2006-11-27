@@ -14,7 +14,8 @@ NB. Provided AS IS. No warrantiles or liabilities extended.
 NB. For zlib and minizip see README files
 NB. 
 NB. 03/20/06 Created
-NB. 06/12/06 Added zwrite
+NB. 06/12/06 Added zwrite; j601
+NB. 06/14/06 libs for Mac OS X and Linux
 NB. 11/27/06 Moved to arc folder
 
 coclass 'zfiles'
@@ -31,7 +32,7 @@ libe=. libp{:: 'so'     ; 'dylib'  ; 'dll'     ;''
 LIB=: jpath ADDONDIR,'lib/',libf,'.',libe,' '
 
 cdecl=: ' ' ,~ IFWIN32{'  '
-xcdm=: 1 : '(LIB,cdecl,m.)&(15!:0)'
+xcdm=: 1 : '(LIB,cdecl,m)&(15!:0)'
 
 unzOpen=:                'unzOpen                i  *c     ' xcdm
 unzClose=:               'unzClose               i  i      ' xcdm
@@ -78,7 +79,7 @@ NB. =========================================================
 NB.*zexist v test if a file exists
 NB. Returns 1 if the file exists, otherwise 0.
 zexist=: 3 : 0
-  'FN ZN'=. y.
+  'FN ZN'=. y
   ZERR=: Z_ERRNO
   if. 0=Z=. 0{::unzOpen ,<ZN do. 0 return. end.
   ZERR=: 0{::unzLocateFile Z;FN;0
@@ -92,7 +93,7 @@ NB. examples:
 NB.   zdir jpath'~addons\zip\test.zip'
 NB.   zdir '*.txt';jpath'~addons\zip\test.zip'
 zdir=: 3 : 0
-  'FN ZN'=. _2{.boxopen y.
+  'FN ZN'=. _2{.boxopen y
   if. 0=#FN do. FP=. rxcomp '.*' else.
     FP=. rxcomp FN rplc '?';'.';'*';'.*';'.';'\.' end.
   ZERR=: Z_ERRNO
@@ -115,7 +116,7 @@ NB. =========================================================
 NB.*zinfo v single file info
 NB. format same as zdir result item
 zinfo=: 3 : 0
-  'FN ZN'=. y.
+  'FN ZN'=. y
   ZERR=: Z_ERRNO
   if. 0=Z=. 0{::unzOpen ,<ZN do. 0 return. end.
   if. Z_OK~:ZERR=: 0{::unzLocateFile Z;FN;0 do.
@@ -130,7 +131,7 @@ zinfo=: 3 : 0
 zgetinfo=: 3 : 0
   FI=. 80#'Z'
   FN=. 128#' '
-  'ze yy FI FN'=. 4{.unzGetCurrentFileInfo y.;FI;FN;(#FN);0;0;0;0
+  'ze yy FI FN'=. 4{.unzGetCurrentFileInfo y;FI;FN;(#FN);0;0;0;0
   if. Z_OK~:ZERR=: ze do.
     empty'' return. end.
   (FileInfo)=. _2(3!:4) FI
@@ -144,7 +145,7 @@ NB. =========================================================
 NB.*zread v read file
 NB. returns _1 if failed
 zread=: 3 : 0
-  'FN ZN'=. y.
+  'FN ZN'=. y
   ZERR=: Z_ERRNO
   if. 0=Z=. 0{::unzOpen ,<ZN do. _1 return. end.
   if. Z_OK~:ZERR=: 0{::unzLocateFile Z;FN;0 do.
@@ -174,7 +175,7 @@ NB. =========================================================
 NB.*zwrite v write file
 NB. returns _1 if failed
 zwrite=: 4 : 0
-  'FN ZN'=. y.
+  'FN ZN'=. y
   ZERR=: Z_ERRNO
   AP=. 2*fexist <ZN
   if. 0=Z=. 0{::zipOpen ZN;AP do. _1 return. end.
@@ -183,17 +184,17 @@ zwrite=: 4 : 0
   if. Z_OK~:ZERR=: 0{::zipOpenNewFileInZip Z;FN;ZI;0;0;0;0;0;(Z_DEFLATED**CL);CL do.
     zipClose Z;0
     _1 return. end.
-  ZERR=: 0{::zipWriteInFileInZip Z;x.;#x.
+  ZERR=: 0{::zipWriteInFileInZip Z;x;#x
   zipCloseFileInZip Z
   zipClose Z;0
-  (ZERR=Z_OK) { _1,#x.
+  (ZERR=Z_OK) { _1,#x
 )
 
 NB. =========================================================
 NB.*zsize v return file size
 NB. returns file size or _1 if error
 zsize=: 3 : 0
-  if. 0=#t=. zinfo y. do. _1 return. end.
+  if. 0=#t=. zinfo y do. _1 return. end.
   2{:: t
 )
 
@@ -203,13 +204,13 @@ NB. return 0 = not exist
 NB.        1 = file
 NB.        2 = directory (optionally ending in path separator)
 ztype=: 3 : 0
-  if. 0=#t=. zinfo y. do. 0 return. end.
+  if. 0=#t=. zinfo y do. 0 return. end.
   1+'/'=_1{0{:: t
 )
 
 NB. =========================================================
 NB.*zscript v load script from zip, cover for 0!:0
-zscript_z_=: [: 3 : '0!:0 zread y.' ]
+zscript_z_=: [: 3 : '0!:0 zread y' ]
 
 zexist_z_=: zexist_zfiles_
 zread_z_=: zread_zfiles_
