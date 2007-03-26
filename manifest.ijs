@@ -8,21 +8,23 @@ Interface API is similar to the files package.
 Includes Win32, Linux and Mac OS X universal binaries. 
 For details see J Wiki.
 
-Copyright 2006 (C) Oleg Kobchenko
+Copyright 2006-2007 (C) Oleg Kobchenko
 )
 
 LABCATEGORY=: 'Archives'
 
-VERSION=: '1.0.1'
+VERSION=: '1.0.2'
 
 RELEASE=: 'j601'
 
 PLATFORMS=: 'win linux darwin'
 
 FILES=: 0 : 0
+history.txt
+manifest.ijs
 test.ijs
-zfiles.ijs
 test.zip
+zfiles.ijs
 doc/README_minizip.txt
 doc/README_zlib.txt
 lib/zlibapi.zip

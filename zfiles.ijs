@@ -17,6 +17,7 @@ NB. 03/20/06 Created
 NB. 06/12/06 Added zwrite; j601
 NB. 06/14/06 libs for Mac OS X and Linux
 NB. 11/27/06 Moved to arc folder
+NB. 03/26/07 CRC in info; global comments; > DLL call
 
 coclass 'zfiles'
 
@@ -34,23 +35,26 @@ LIB=: jpath ADDONDIR,'lib/',libf,'.',libe,' '
 cdecl=: ' ' ,~ IFWIN32{'  '
 xcdm=: 1 : '(LIB,cdecl,m)&(15!:0)'
 
-unzOpen=:                'unzOpen                i  *c     ' xcdm
-unzClose=:               'unzClose               i  i      ' xcdm
-unzLocateFile=:          'unzLocateFile          i  i *c i ' xcdm
+unzOpen=:                'unzOpen               > i  *c     ' xcdm
+unzClose=:               'unzClose              > i  i      ' xcdm
+unzLocateFile=:          'unzLocateFile         > i  i *c i ' xcdm
 
-unzOpenCurrentFile=:     'unzOpenCurrentFile     i  i      ' xcdm
-unzCloseCurrentFile=:    'unzCloseCurrentFile    i  i      ' xcdm
-unzReadCurrentFile=:     'unzReadCurrentFile     i  i *c i ' xcdm
+unzOpenCurrentFile=:     'unzOpenCurrentFile    > i  i      ' xcdm
+unzCloseCurrentFile=:    'unzCloseCurrentFile   > i  i      ' xcdm
+unzReadCurrentFile=:     'unzReadCurrentFile    > i  i *c i ' xcdm
 
-unzGoToFirstFile=:       'unzGoToFirstFile       i  i      ' xcdm
-unzGoToNextFile=:        'unzGoToNextFile        i  i      ' xcdm
-unzGetCurrentFileInfo=:  'unzGetCurrentFileInfo  i  i *c *c i  i i  i i ' xcdm
+unzGoToFirstFile=:       'unzGoToFirstFile      > i  i      ' xcdm
+unzGoToNextFile=:        'unzGoToNextFile       > i  i      ' xcdm
+unzGetCurrentFileInfo=:  'unzGetCurrentFileInfo > i  i *c *c i  i i  i i ' xcdm
 
-zipOpen=:                'zipOpen                i  *c i   ' xcdm
-zipClose=:               'zipClose               i  i i    ' xcdm
-zipOpenNewFileInZip=:    'zipOpenNewFileInZip    i  i *c *c  i i i i i  i i' xcdm
-zipCloseFileInZip=:      'zipCloseFileInZip      i  i      ' xcdm
-zipWriteInFileInZip=:    'zipWriteInFileInZip    i  i *c i ' xcdm
+zipOpen=:                'zipOpen               > i  *c i   ' xcdm
+zipClose=:               'zipClose              > i  i i    ' xcdm
+zipClose2=:              'zipClose              > i  i *c   ' xcdm
+zipOpenNewFileInZip=:    'zipOpenNewFileInZip   > i  i *c *c  i i i i i  i i' xcdm
+zipCloseFileInZip=:      'zipCloseFileInZip     > i  i      ' xcdm
+zipWriteInFileInZip=:    'zipWriteInFileInZip   > i  i *c i ' xcdm
+
+unzGetGlobalComment=:    'unzGetGlobalComment   > i  i *c i ' xcdm
 
 
 NB. Return codes for the compression/decompression functions. Negative
@@ -81,8 +85,8 @@ NB. Returns 1 if the file exists, otherwise 0.
 zexist=: 3 : 0
   'FN ZN'=. y
   ZERR=: Z_ERRNO
-  if. 0=Z=. 0{::unzOpen ,<ZN do. 0 return. end.
-  ZERR=: 0{::unzLocateFile Z;FN;0
+  if. 0=Z=. unzOpen ,<ZN do. 0 return. end.
+  ZERR=: unzLocateFile Z;FN;0
   unzClose Z
   ZERR=Z_OK
 )
@@ -97,15 +101,15 @@ zdir=: 3 : 0
   if. 0=#FN do. FP=. rxcomp '.*' else.
     FP=. rxcomp FN rplc '?';'.';'*';'.*';'.';'\.' end.
   ZERR=: Z_ERRNO
-  if. 0=Z=. 0{::unzOpen ,<ZN do. 
+  if. 0=Z=. unzOpen ,<ZN do. 
     rxfree FP
     empty'' return. end.
   r=. empty''
-  ZERR=: 0{::unzGoToFirstFile Z
+  ZERR=: unzGoToFirstFile Z
   while. ZERR=Z_OK do.
     if. 0 = #r1=. zgetinfo Z do. break. end.
     if. FP rxeq 0{::r1 do. r=. r,r1 end.
-    ZERR=: 0{::unzGoToNextFile Z
+    ZERR=: unzGoToNextFile Z
   end.
   unzClose Z
   rxfree FP
@@ -118,8 +122,8 @@ NB. format same as zdir result item
 zinfo=: 3 : 0
   'FN ZN'=. y
   ZERR=: Z_ERRNO
-  if. 0=Z=. 0{::unzOpen ,<ZN do. 0 return. end.
-  if. Z_OK~:ZERR=: 0{::unzLocateFile Z;FN;0 do.
+  if. 0=Z=. unzOpen ,<ZN do. 0 return. end.
+  if. Z_OK~:ZERR=: unzLocateFile Z;FN;0 do.
     unzClose Z
     empty'' return. end.
   r=. zgetinfo Z
@@ -131,14 +135,13 @@ zinfo=: 3 : 0
 zgetinfo=: 3 : 0
   FI=. 80#'Z'
   FN=. 128#' '
-  'ze yy FI FN'=. 4{.unzGetCurrentFileInfo y;FI;FN;(#FN);0;0;0;0
-  if. Z_OK~:ZERR=: ze do.
+  if. Z_OK~:ZERR=: unzGetCurrentFileInfo y;FI;FN;(#FN);0;0;0;0 do.
     empty'' return. end.
   (FileInfo)=. _2(3!:4) FI
   A=. '------'
   A=. ('a-'{~0=ExAttr and 32)5}A
   A=. ('d-'{~0=ExAttr and 16)4}A
-  (cbFileName{.FN);(Year,Mon,Day,Hour,Min,Sec);Size;'rw-';A
+  (cbFileName{.FN);(Year,Mon,Day,Hour,Min,Sec);Size;'rw-';A;Crc
 )
 
 NB. =========================================================
@@ -147,17 +150,17 @@ NB. returns _1 if failed
 zread=: 3 : 0
   'FN ZN'=. y
   ZERR=: Z_ERRNO
-  if. 0=Z=. 0{::unzOpen ,<ZN do. _1 return. end.
-  if. Z_OK~:ZERR=: 0{::unzLocateFile Z;FN;0 do.
+  if. 0=Z=. unzOpen ,<ZN do. _1 return. end.
+  if. Z_OK~:ZERR=: unzLocateFile Z;FN;0 do.
     unzClose Z
     _1 return. end.
-  if. Z_OK~:ZERR=: 0{::unzOpenCurrentFile Z do.
+  if. Z_OK~:ZERR=: unzOpenCurrentFile Z do.
     unzClose Z
     _1 return. end.
   r=. ''
   t=. 16384$' '
   while. 1 do.
-    ZERR=: 0{::unzReadCurrentFile Z;t;#t
+    ZERR=: unzReadCurrentFile Z;t;#t
     if. ZERR<:0 do. break. end.
     if. ZERR=#t do. r=. r,t else. r=.r, ZERR{.t end.
   end.
@@ -178,13 +181,13 @@ zwrite=: 4 : 0
   'FN ZN'=. y
   ZERR=: Z_ERRNO
   AP=. 2*fexist <ZN
-  if. 0=Z=. 0{::zipOpen ZN;AP do. _1 return. end.
+  if. 0=Z=. zipOpen ZN;AP do. _1 return. end.
   ZI=. (|.<.6!:0''),0,0,32,0       NB. zip_fileinfo
   ZI=. 2 (3!:4) ZI
-  if. Z_OK~:ZERR=: 0{::zipOpenNewFileInZip Z;FN;ZI;0;0;0;0;0;(Z_DEFLATED**CL);CL do.
-    zipClose Z;0
+  if. Z_OK~:ZERR=: zipOpenNewFileInZip Z;FN;ZI;0;0;0;0;0;(Z_DEFLATED**CL);CL do.
+    zipClose Z;<0
     _1 return. end.
-  ZERR=: 0{::zipWriteInFileInZip Z;x;#x
+  ZERR=: zipWriteInFileInZip Z;x;#x
   zipCloseFileInZip Z
   zipClose Z;0
   (ZERR=Z_OK) { _1,#x
@@ -209,6 +212,30 @@ ztype=: 3 : 0
 )
 
 NB. =========================================================
+NB.*zgetcomment v file
+NB. returns comment or ''
+zgetcomment=: 3 : 0
+  ZERR=: Z_ERRNO
+  if. 0=Z=. unzOpen ,< y do. _1 return. end.
+  c=. 1024#' '
+  sz=: unzGetGlobalComment Z;c;#c
+  unzClose Z
+  if. sz<0 do. return. sz end.
+  sz{.c
+)
+
+NB. =========================================================
+NB.*zsetcomment v file
+NB.   comment zsetcomment file
+zsetcomment=: 4 : 0
+  ZERR=: Z_ERRNO
+  AP=. 2*fexist <y
+  if. 0=Z=. zipOpen y;AP do. _1 return. end.
+  if. Z_OK~:ZERR=: zipClose2 Z;x do. _1 return. end.
+  empty''
+)
+
+NB. =========================================================
 NB.*zscript v load script from zip, cover for 0!:0
 zscript_z_=: [: 3 : '0!:0 zread y' ]
 
@@ -219,3 +246,5 @@ zinfo_z_=: zinfo_zfiles_
 zdir_z_=: zdir_zfiles_
 zsize_z_=: zsize_zfiles_
 ztype_z_=: ztype_zfiles_
+zgetcomment_z_=: zgetcomment_zfiles_
+zsetcomment_z_=: zsetcomment_zfiles_

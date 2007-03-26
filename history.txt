@@ -1,0 +1,12 @@
+arc/zip - change history
+
+== 1.0.2 ==
+ * chg: CRC in info; > DLL call
+ * add: global comments; 
+
+== 1.0.1 ==
+ * add: libs for Mac OS X and Linux
+ * chg: Moved to arc folder
+
+== 1.0.0 ==
+ * add: zwrite; j601
