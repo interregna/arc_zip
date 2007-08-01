@@ -1,5 +1,9 @@
 arc/zip - change history
 
+== 1.0.3 ==
+ * chg: j602
+ * fix: support quotes
+
 == 1.0.2 ==
  * chg: CRC in info; > DLL call
  * add: global comments; 

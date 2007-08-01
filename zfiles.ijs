@@ -30,10 +30,10 @@ require 'dll files regex strings'
 libp=. #.IFWIN32,'Darwin'-:UNAME
 libf=. libp{:: 'zlibapi'; 'libzlib'; 'zlibwapi';''
 libe=. libp{:: 'so'     ; 'dylib'  ; 'dll'     ;''
-LIB=: jpath ADDONDIR,'lib/',libf,'.',libe,' '
+LIB=: jpath ADDONDIR,'lib/',libf,'.',libe
 
 cdecl=: ' ' ,~ IFWIN32{'  '
-xcdm=: 1 : '(LIB,cdecl,m)&(15!:0)'
+xcdm=: 1 : '(''"'',LIB,''" '',cdecl,m)&(15!:0)'
 
 unzOpen=:                'unzOpen               > i  *c     ' xcdm
 unzClose=:               'unzClose              > i  i      ' xcdm
