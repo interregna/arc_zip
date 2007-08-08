@@ -21,8 +21,12 @@ zdir DIR,'/test1.zip'
 
 32{. F=. fread DIR,'/zfiles.ijs'
 F zwrite 'test1.ijs';DIR,'/test1.zip'
+
+'' zwrite 'folder/';DIR,'/test1.zip'
+'three' zwrite 'folder/test3.txt';DIR,'/test1.zip'
 zdir DIR,'/test1.zip'
 32{.zread 'test1.ijs';DIR,'/test1.zip'
+
 zgetcomment DIR,'/test1.zip'
 'test123'zsetcomment DIR,'/test1.zip'
 zgetcomment DIR,'/test1.zip'

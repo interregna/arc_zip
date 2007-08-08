@@ -1,5 +1,8 @@
 arc/zip - change history
 
+== 1.0.5 ==
+ * add: test.ijs: separate folder
+
 == 1.0.4 ==
  * add: writing separate folder entries
 
