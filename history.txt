@@ -1,5 +1,8 @@
 arc/zip - change history
 
+== 1.0.4 ==
+ * add: writing separate folder entries
+
 == 1.0.3 ==
  * chg: j602
  * fix: support quotes

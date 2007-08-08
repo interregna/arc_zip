@@ -182,7 +182,8 @@ zwrite=: 4 : 0
   ZERR=: Z_ERRNO
   AP=. 2*fexist <ZN
   if. 0=Z=. zipOpen ZN;AP do. _1 return. end.
-  ZI=. (|.<.6!:0''),0,0,32,0       NB. zip_fileinfo
+  FN=. '/'&(I.@(e.&'/\')@]}) FN
+  ZI=. (|.<.6!:0''),0,0,(32+16*'/'={:FN),0       NB. zip_fileinfo
   ZI=. 2 (3!:4) ZI
   if. Z_OK~:ZERR=: zipOpenNewFileInZip Z;FN;ZI;0;0;0;0;0;(Z_DEFLATED**CL);CL do.
     zipClose Z;<0
