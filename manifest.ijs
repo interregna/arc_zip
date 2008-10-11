@@ -13,7 +13,7 @@ Copyright 2006-2007 (C) Oleg Kobchenko
 
 LABCATEGORY=: 'Archives'
 
-VERSION=: '1.0.6'
+VERSION=: '1.0.7'
 
 RELEASE=: 'j601 j602'
 
@@ -29,6 +29,7 @@ manifest.ijs
 test.ijs
 test.zip
 zfiles.ijs
+zbuffer.ijs
 doc/README_minizip.txt
 doc/README_zlib.txt
 lib/zlibapi.zip
