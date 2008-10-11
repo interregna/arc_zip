@@ -1,5 +1,8 @@
 arc/zip - change history
 
+== 1.0.6 ==
+ * add: zbuffer.ijs: in-memory compression
+
 == 1.0.5 ==
  * add: test.ijs: separate folder
 

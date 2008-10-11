@@ -13,11 +13,15 @@ Copyright 2006-2007 (C) Oleg Kobchenko
 
 LABCATEGORY=: 'Archives'
 
-VERSION=: '1.0.5'
+VERSION=: '1.0.6'
 
 RELEASE=: 'j601 j602'
 
 PLATFORMS=: 'win linux darwin'
+
+DEPENDS=: 0 : 0
+convert/misc/ascii85
+)
 
 FILES=: 0 : 0
 history.txt
