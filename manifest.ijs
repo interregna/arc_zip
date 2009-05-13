@@ -13,9 +13,9 @@ Copyright 2006-2007 (C) Oleg Kobchenko
 
 LABCATEGORY=: 'Archives'
 
-VERSION=: '1.0.7'
+VERSION=: '1.1.0'
 
-RELEASE=: 'j601 j602'
+RELEASE=: 'j602'
 
 PLATFORMS=: 'win linux darwin'
 
@@ -43,6 +43,12 @@ FILESLINUX=: 0 : 0
 lib/zlibapi.so
 )
 
+FILESLINUX64=: 0 : 0
+lib/zlibapi64.so
+)
+
 FILESDARWIN=: 0 : 0
 lib/libzlib.dylib
 )
+
+

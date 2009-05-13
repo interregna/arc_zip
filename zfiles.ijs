@@ -18,6 +18,7 @@ NB. 06/12/06 Added zwrite; j601
 NB. 06/14/06 libs for Mac OS X and Linux
 NB. 11/27/06 Moved to arc folder
 NB. 03/26/07 CRC in info; global comments; > DLL call
+NB. 05/12/09 64-bit support for Linux
 
 coclass 'zfiles'
 
@@ -30,31 +31,33 @@ require 'dll files regex strings'
 libp=. #.IFWIN32,'Darwin'-:UNAME
 libf=. libp{:: 'zlibapi'; 'libzlib'; 'zlibwapi';''
 libe=. libp{:: 'so'     ; 'dylib'  ; 'dll'     ;''
+libf=. libf,IF64#'64'
 LIB=: jpath ADDONDIR,'lib/',libf,'.',libe
 
 cdecl=: ' ' ,~ IFWIN32{'  '
 xcdm=: 1 : '(''"'',LIB,''" '',cdecl,m)&(15!:0)'
 
-unzOpen=:                'unzOpen               > i  *c     ' xcdm
-unzClose=:               'unzClose              > i  i      ' xcdm
-unzLocateFile=:          'unzLocateFile         > i  i *c i ' xcdm
+NB. minizip/unzip.h
+unzOpen=:                'unzOpen               > x  *c     ' xcdm
+unzClose=:               'unzClose              > i  x      ' xcdm
+unzLocateFile=:          'unzLocateFile         > i  x *c i ' xcdm
 
-unzOpenCurrentFile=:     'unzOpenCurrentFile    > i  i      ' xcdm
-unzCloseCurrentFile=:    'unzCloseCurrentFile   > i  i      ' xcdm
-unzReadCurrentFile=:     'unzReadCurrentFile    > i  i *c i ' xcdm
+unzOpenCurrentFile=:     'unzOpenCurrentFile    > i  x      ' xcdm
+unzCloseCurrentFile=:    'unzCloseCurrentFile   > i  x      ' xcdm
+unzReadCurrentFile=:     'unzReadCurrentFile    > i  x *c i ' xcdm
 
-unzGoToFirstFile=:       'unzGoToFirstFile      > i  i      ' xcdm
-unzGoToNextFile=:        'unzGoToNextFile       > i  i      ' xcdm
-unzGetCurrentFileInfo=:  'unzGetCurrentFileInfo > i  i *c *c i  i i  i i ' xcdm
+unzGoToFirstFile=:       'unzGoToFirstFile      > i  x      ' xcdm
+unzGoToNextFile=:        'unzGoToNextFile       > i  x      ' xcdm
+unzGetCurrentFileInfo=:  'unzGetCurrentFileInfo > i  x *c *c i  x i  x i ' xcdm
+unzGetGlobalComment=:    'unzGetGlobalComment   > i  x *c i ' xcdm
 
-zipOpen=:                'zipOpen               > i  *c i   ' xcdm
-zipClose=:               'zipClose              > i  i i    ' xcdm
-zipClose2=:              'zipClose              > i  i *c   ' xcdm
-zipOpenNewFileInZip=:    'zipOpenNewFileInZip   > i  i *c *c  i i i i i  i i' xcdm
-zipCloseFileInZip=:      'zipCloseFileInZip     > i  i      ' xcdm
-zipWriteInFileInZip=:    'zipWriteInFileInZip   > i  i *c i ' xcdm
-
-unzGetGlobalComment=:    'unzGetGlobalComment   > i  i *c i ' xcdm
+NB. minizip/zip.h
+zipOpen=:                'zipOpen               > x  *c i   ' xcdm
+zipClose=:               'zipClose              > i  x x    ' xcdm
+zipClose2=:              'zipClose              > i  x *c   ' xcdm
+zipOpenNewFileInZip=:    'zipOpenNewFileInZip   > i  x *c *c  x i x i x  i i' xcdm
+zipCloseFileInZip=:      'zipCloseFileInZip     > i  x      ' xcdm
+zipWriteInFileInZip=:    'zipWriteInFileInZip   > i  x *c i ' xcdm
 
 
 NB. Return codes for the compression/decompression functions. Negative
@@ -133,11 +136,12 @@ zinfo=: 3 : 0
 )
 
 zgetinfo=: 3 : 0
-  FI=. 80#'Z'
+  FI_Longs=. 14*IF64{4 8
+  FI=. (FI_Longs+4*6)#'Z'
   FN=. 128#' '
   if. Z_OK~:ZERR=: unzGetCurrentFileInfo y;FI;FN;(#FN);0;0;0;0 do.
     empty'' return. end.
-  (FileInfo)=. _2(3!:4) FI
+  (FileInfo)=. ((IF64{_2 _3)(3!:4) FI_Longs{.FI) , _2(3!:4)FI_Longs}.FI
   A=. '------'
   A=. ('a-'{~0=ExAttr and 32)5}A
   A=. ('d-'{~0=ExAttr and 16)4}A
