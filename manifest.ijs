@@ -13,7 +13,7 @@ Copyright 2006-2007 (C) Oleg Kobchenko
 
 LABCATEGORY=: 'Archives'
 
-VERSION=: '1.1.0'
+VERSION=: '1.1.1'
 
 RELEASE=: 'j602'
 
@@ -41,6 +41,7 @@ lib/zlibwapi.dll
 
 FILESLINUX=: 0 : 0
 lib/zlibapi.so
+lib/zlibapi64.so
 )
 
 FILESLINUX64=: 0 : 0
@@ -50,5 +51,3 @@ lib/zlibapi64.so
 FILESDARWIN=: 0 : 0
 lib/libzlib.dylib
 )
-
-
