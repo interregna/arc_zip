@@ -26,13 +26,13 @@ convert/misc/ascii85
 FILES=: 0 : 0
 history.txt
 manifest.ijs
-test.ijs
-test.zip
 zfiles.ijs
 zbuffer.ijs
 doc/README_minizip.txt
 doc/README_zlib.txt
 lib/zlibapi.zip
+test/test.ijs
+test/test.zip
 )
 
 FILESWIN=: 0 : 0

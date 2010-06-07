@@ -7,20 +7,26 @@ NB.
 NB. See http://www.zlib.net/manual.html
 NB.
 NB. 10/10/08 Created
+NB. 06/07/10 j701 support
+
+3 :0''        NB. hack to maintain j602 support
+  if. 7 > 0". 1{ 9!:14'' do. IFWIN_z_=: IFWIN32 end.
+)
+
+require 'dll files'
 
 coclass 'zbuffer'
 
+load 'convert/misc/ascii85'    NB. define in _zbuffer_
+
 ADDONDIR=: jpath '~addons/arc/zip/'
 
-require 'dll files'
-load 'convert/misc/ascii85'
-
-libp=. #.IFWIN32,'Darwin'-:UNAME
+libp=. #.IFWIN,'Darwin'-:UNAME
 libf=. libp{:: 'zlibapi'; 'libzlib'; 'zlibwapi';''
 libe=. libp{:: 'so'     ; 'dylib'  ; 'dll'     ;''
 LIB=: jpath ADDONDIR,'lib/',libf,'.',libe
 
-cdecl=: ' ' ,~ IFWIN32{'  '
+cdecl=: ' ' ,~ IFWIN{'  '
 xcdm=: 1 : '(''"'',LIB,''" '',cdecl,m)&(15!:0)'
 
 compress2=:    'compress2    > i  *c *i *c i i ' xcdm

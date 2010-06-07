@@ -19,6 +19,13 @@ NB. 06/14/06 libs for Mac OS X and Linux
 NB. 11/27/06 Moved to arc folder
 NB. 03/26/07 CRC in info; global comments; > DLL call
 NB. 05/12/09 64-bit support for Linux
+NB. 06/07/10 j701 support
+
+3 :0''      NB. hack to maintain j602 support
+  if. 7 > 0". 1{ 9!:14'' do. IFWIN_z_=: IFWIN32 end.
+)
+
+require 'dll files strings regex'
 
 coclass 'zfiles'
 
@@ -26,15 +33,13 @@ TEMPFILE=: 'graphview'
 TEMPDIR=: jpath '~temp'
 ADDONDIR=: jpath '~addons/arc/zip/'
 
-require 'dll files regex strings'
-
-libp=. #.IFWIN32,'Darwin'-:UNAME
+libp=. #.IFWIN,'Darwin'-:UNAME
 libf=. libp{:: 'zlibapi'; 'libzlib'; 'zlibwapi';''
 libe=. libp{:: 'so'     ; 'dylib'  ; 'dll'     ;''
 libf=. libf,IF64#'64'
 LIB=: jpath ADDONDIR,'lib/',libf,'.',libe
 
-cdecl=: ' ' ,~ IFWIN32{'  '
+cdecl=: ' ' ,~ IFWIN{'  '
 xcdm=: 1 : '(''"'',LIB,''" '',cdecl,m)&(15!:0)'
 
 NB. minizip/unzip.h

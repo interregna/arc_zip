@@ -1,5 +1,10 @@
 arc/zip - change history
 
+== 1.1.2 ==
+ * add: j701 support
+ * chg: move test files to sub-folder
+ * chg: test zip copied to ~temp for tests
+
 == 1.1.1 ==
  * fix: hack: add 64.so to non-64 LINUX in manifest
 
