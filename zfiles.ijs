@@ -21,7 +21,7 @@ NB. 03/26/07 CRC in info; global comments; > DLL call
 NB. 05/12/09 64-bit support for Linux
 NB. 06/07/10 j701 support
 
-3 :0''      NB. hack to maintain j602 support
+3 :0''      NB.! Temporary hack to maintain j602 support
   if. 7 > 0". 1{ 9!:14'' do. IFWIN_z_=: IFWIN32 end.
 )
 
