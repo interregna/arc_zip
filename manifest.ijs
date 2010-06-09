@@ -15,7 +15,7 @@ LABCATEGORY=: 'Archives'
 
 VERSION=: '1.1.2'
 
-RELEASE=: 'j602'
+RELEASE=: 'j602 j701'
 
 PLATFORMS=: 'win linux darwin'
 
