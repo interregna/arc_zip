@@ -9,10 +9,6 @@ NB.
 NB. 10/10/08 Created
 NB. 06/07/10 j701 support
 
-3 :0''        NB. hack to maintain j602 support
-  if. 7 > 0". 1{ 9!:14'' do. IFWIN_z_=: IFWIN32 end.
-)
-
 require 'dll files'
 
 coclass 'zbuffer'
