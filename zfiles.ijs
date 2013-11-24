@@ -34,6 +34,7 @@ libf=. libp{:: 'zlibapi'; 'libzlib'; 'zlibwapi';''
 libe=. libp{:: 'so'     ; 'dylib'  ; 'dll'     ;''
 libf=. libf,IF64#'64'
 LIB=: jpath ADDONDIR,'lib/',libf,'.',libe
+LIB=: (fexist LIB){::LIB~;libf,'.',libe
 
 cdecl=: ' ' ,~ IFWIN{'  '
 xcdm=: 1 : '(''"'',LIB,''" '',cdecl,m)&(15!:0)'
