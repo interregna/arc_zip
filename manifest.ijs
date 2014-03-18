@@ -13,14 +13,14 @@ Copyright 2006-2007 (C) Oleg Kobchenko
 
 LABCATEGORY=: 'Archives'
 
-VERSION=: '1.1.4'
+VERSION=: '1.1.5'
 
 RELEASE=: 'j602 j701 j801'
 
 PLATFORMS=: ''
 
 DEPENDS=: 0 : 0
-convert/misc/ascii85
+convert/misc
 )
 
 FILES=: 0 : 0
