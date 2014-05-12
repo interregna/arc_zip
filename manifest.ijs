@@ -17,7 +17,7 @@ VERSION=: '1.1.6'
 
 RELEASE=: 'j802'
 
-PLATFORMS=: ''
+PLATFORMS=: 'linux win darwin android'
 
 DEPENDS=: 0 : 0
 convert/misc
