@@ -13,7 +13,7 @@ Copyright 2006-2007 (C) Oleg Kobchenko
 
 LABCATEGORY=: 'Archives'
 
-VERSION=: '1.1.6'
+VERSION=: '1.1.7'
 
 RELEASE=: 'j802'
 
