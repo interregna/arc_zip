@@ -99,8 +99,8 @@ zexist=: 3 : 0
 NB. =========================================================
 NB.*zdir v zip directory: boxed matrix
 NB. examples:
-NB.   zdir jpath'~addons\zip\test.zip'
-NB.   zdir '*.txt';jpath'~addons\zip\test.zip'
+NB.   zdir jpath'~addons/zip/test.zip'
+NB.   zdir '*.txt';jpath'~addons/zip/test.zip'
 zdir=: 3 : 0
   'FN ZN'=. _2{.boxopen y
   if. 0=#FN do. FP=. rxcomp '.*' else.
