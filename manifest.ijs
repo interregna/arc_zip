@@ -15,7 +15,9 @@ LABCATEGORY=: 'Archives'
 
 VERSION=: '1.1.12'
 
-RELEASE=: 'j802 j803 j804 j805 j806 j807'
+RELEASE=: ''
+
+FOLDER=: 'arc/zip'
 
 PLATFORMS=: ''
 
