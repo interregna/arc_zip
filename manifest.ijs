@@ -13,9 +13,9 @@ Copyright 2006-2007 (C) Oleg Kobchenko
 
 LABCATEGORY=: 'Archives'
 
-VERSION=: '1.1.12'
+VERSION=: '1.1.13'
 
-RELEASE=: ''
+RELEASE=: 'j804 j807'
 
 FOLDER=: 'arc/zip'
 
