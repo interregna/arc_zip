@@ -30,9 +30,9 @@ TEMPDIR=: jpath '~temp'
 ADDONDIR=: jpath '~addons/arc/zip/'
 
 libp=. #.IFWIN,'Darwin'-:UNAME
-libf=. libp{:: 'zlibapi'; 'libzlib'; 'zlibwapi';''
+libf=. libp{:: 'zlibapi'; 'libminizip'; 'zlibwapi';''
 libe=. libp{:: 'so'     ; 'dylib'  ; 'dll'     ;''
-libf=. libf,IF64#'64'
+NB. libf=. libf,IF64#'64'
 LIB=: jpath ADDONDIR,'lib/',libf,'.',libe
 LIB=: (fexist LIB){::LIB;~libf,'.',libe
 
@@ -137,18 +137,25 @@ zinfo=: 3 : 0
   r
 )
 
-zgetinfo=: 3 : 0
+zgetinfo_zfiles_=: {{
   FI_Longs=. 14*IF64{4 8
   FI=. (FI_Longs+4*6)#'Z'
   FN=. 128#' '
-  if. Z_OK~:ZERR=: unzGetCurrentFileInfo y;FI;FN;(#FN);0;0;0;0 do.
+  aFI=: mema #FI
+  aFN=: mema #FN
+  FN memw aFN,0,#FN
+  FI memw aFI,0,#FI
+  if. Z_OK~:ZERR=: unzGetCurrentFileInfo_zfiles_ y;(<aFI);(<aFN);(#FN);0;0;0;0 do.
     empty'' return. end.
-  (FileInfo)=. ((IF64{_2 _3)(3!:4) FI_Longs{.FI) , _2(3!:4)FI_Longs}.FI
+  FN =. memr aFN,0,_1
+  FI =. memr aFI,0,136,2
+  (FileInfo_zfiles_) =. ((IF64{_2 _3)(3!:4) FI_Longs{.FI) , _2(3!:4)FI_Longs}.FI
+  memf"0 aFN, aFI
   A=. '------'
   A=. ('a-'{~0=ExAttr and 32)5}A
   A=. ('d-'{~0=ExAttr and 16)4}A
   (cbFileName{.FN);(Year,Mon,Day,Hour,Min,Sec);Size;'rw-';A;Crc
-)
+}}
 
 NB. =========================================================
 NB.*zread v read file
@@ -156,7 +163,7 @@ NB. returns _1 if failed
 zread=: 3 : 0
   'FN ZN'=. y
   ZERR=: Z_ERRNO
-  if. 0=Z=. unzOpen ,<ZN do. _1 return. end.
+  if. 0=Z=. unzOpen_zfiles_ ,<ZN do. _1 return. end.
   if. Z_OK~:ZERR=: unzLocateFile Z;FN;0 do.
     unzClose Z
     _1 return. end.
@@ -166,9 +173,13 @@ zread=: 3 : 0
   r=. ''
   t=. 16384$' '
   while. 1 do.
-    ZERR=: unzReadCurrentFile Z;t;#t
-    if. ZERR<:0 do. break. end.
-    if. ZERR=#t do. r=. r,t else. r=.r, ZERR{.t end.
+    at=: mema #t
+    t memw at,0,#t
+    ZERR=: unzReadCurrentFile Z;(<at);#t
+    t =. memr at,0,_1
+    memf at
+    if. ZERR <: 0 do. break. end.
+    if. ZERR = # t do. r=. r,t else. r=.r, ZERR{.t end.
   end.
   if. ZERR<0 do. r=. _1 end.
   unzCloseCurrentFile Z
